@@ -1,5 +1,15 @@
 module FiniteElementAnalysis
 
-# Write your package code here.
+export transformationmatrix
+export transformationmatrixstar
+export prepareelements
+export globalstiffnessmatrix
+export reducedglobalstiffnessmatrix
+export prepareelements_line
+export prepareelements_beam
+export solve
+export axialstresses
+export shearstresses
+include("functions.jl")
 
 end
