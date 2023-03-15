@@ -21,5 +21,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/jmanthony3/FiniteElementAnalysis.jl",
-    devbranch="main",
+    devbranch="master",
 )
