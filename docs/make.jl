@@ -8,6 +8,7 @@ makedocs(;
     authors="Joby M. Anthony III",
     repo="https://github.com/jmanthony3/FiniteElementAnalysis.jl/blob/{commit}{path}#{line}",
     sitename="FiniteElementAnalysis.jl",
+    doctest=false,
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://jmanthony3.github.io/FiniteElementAnalysis.jl",

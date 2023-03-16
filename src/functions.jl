@@ -43,7 +43,7 @@ function transformationmatrixstar(θ::Real, isdegrees::Bool=true)::Matrix{Float6
     return float.([[C S 0 0]; [0 0 C S]])
 end
 
-@doc """
+"""
     prepareelements_line(elements, elementareas, elementmoduli, elementlengths, nodeangles=0, isdegrees=true; dims=1, stiffnesscoefficients=nothing)::Dict{String, LineElements}
 
 Return the dictionary with properties specific to those **line** elements between node pairs.
@@ -61,12 +61,15 @@ See also: `globalstiffnessmatrix`, `solve`, and `axialstresses`.
 - `stiffnesscoefficients::Union{<:Real, Vector{<:Real}}`: the stiffness coefficient, ``k`` associated with each element.
 
 # Examples
-```julia
-julia> A = [0.75, 0.5, 1]   # [in²]
-julia> E = 10.6e6           # [psi]
-julia> L = [12, 9, 8]       # [in]
-julia> elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
-julia> prepareelements_line(elements, A, E, L)
+```jldoctest; output=false
+A = [0.75, 0.5, 1]   # [in²]
+E = 10.6e6           # [psi]
+L = [12, 9, 8]       # [in]
+elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
+prepareelements_line(elements, A, E, L)
+
+# output
+
 Dict{String, FiniteElementAnalysis.LineElements} with 3 entries:
   "1" => LineElements((1, 2), 0.75, 1.06e7, 12.0, 662500.0, 0.0, [662500.0 -662500.0; -662500.0 662500.0])
   "2" => LineElements((2, 3), 0.5, 1.06e7, 9.0, 5.88889e5, 0.0, [5.88889e5 -5.88889e5; -5.88889e5 5.88889e5])
@@ -107,8 +110,8 @@ function prepareelements_line(
     return preparedelementsdictionary
 end
 
-@doc """
-   prepareelements_beam(elements, elementmoduli, elementareasofinertia, elementlengths, nodeangles=0, isdegrees=true; dims=2, stiffnesscoefficients=nothing)::Dict{String, BeamElements}
+"""
+    prepareelements_beam(elements, elementmoduli, elementareasofinertia, elementlengths, nodeangles=0, isdegrees=true; dims=2, stiffnesscoefficients=nothing)::Dict{String, BeamElements}
 
 Return the dictionary with properties specific to those **beam** elements between node pairs.
 
@@ -125,10 +128,13 @@ See also: `globalstiffnessmatrix`, `solve`, and `axialstresses`.
 - `stiffnesscoefficients::Union{<:Real, Vector{<:Real}}`: the stiffness coefficient, ``k`` associated with each element.
 
 # Examples
-```julia
-julia> E, I, L = 30e6, 200, 20         # [psi, in⁴, ft]
-julia> elements = Dict{String, Tuple{Int, Int}}("1"=>(1, 2),"2"=>(2, 3))
-julia> prepareelements_beam(elements, E, I, L)
+```jldoctest; output=false
+E, I, L = 30e6, 200, 20     # [psi, in⁴, ft]
+elements = Dict("1"=>(1, 2),"2"=>(2, 3))
+prepareelements_beam(elements, E, I, L)
+
+# output
+
 Dict{String, FiniteElementAnalysis.BeamElements} with 2 entries:
   "1" => BeamElements((1, 2), 3.0e7, 200.0, 20.0, 750000.0, 0.0, [9.0e6 9.0e7 -9.0e6 9.0e7; 9.0e7 1.2e9 -9.0e7 6.0e8; -9.0e6 -9.0e7 9.0e6 -9.0e7; 9.0e7 6.0e8 -9.0e7 1.2e9])
   "2" => BeamElements((2, 3), 3.0e7, 200.0, 20.0, 750000.0, 0.0, [9.0e6 9.0e7 -9.0e6 9.0e7; 9.0e7 1.2e9 -9.0e7 6.0e8; -9.0e6 -9.0e7 9.0e6 -9.0e7; 9.0e7 6.0e8 -9.0e7 1.2e9])
@@ -169,8 +175,8 @@ function prepareelements_beam(
     return preparedelementsdictionary
 end
 
-@doc """
-   globalstiffnessmatrix(elements::Dict{String, LineElements}, dims::Integer=1)::Matrix{Float64}
+"""
+    globalstiffnessmatrix(elements::Dict{String, LineElements}, dims::Integer=1)::Matrix{Float64}
     globalstiffnessmatrix(elements::Dict{String, BeamElements}, dims::Integer=2)::Matrix{Float64}
 
 Assembles the global stiffness matrix from the dictionary, `elements`.
@@ -182,12 +188,15 @@ See also: `prepareelements_line`, `prepareelements_beam`, and `transformationmat
 - `dims`: the number of dimensions being analyzed.
 
 # Examples
-```julia
-julia> A = [0.75, 0.5, 1]   # [in²]
-julia> E = 10.6e6           # [psi]
-julia> L = [12, 9, 8]       # [in]
-julia> elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
-julia> globalstiffnessmatrix(prepareelements_line(elements, A, E, L))
+```jldoctest; output=false
+A = [0.75, 0.5, 1]   # [in²]
+E = 10.6e6           # [psi]
+L = [12, 9, 8]       # [in]
+elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
+globalstiffnessmatrix(prepareelements_line(elements, A, E, L))
+
+# output
+
 4×4 Matrix{Float64}:
   662500.0  -662500.0         0.0         0.0
  -662500.0        1.25139e6  -5.88889e5   0.0
@@ -195,12 +204,15 @@ julia> globalstiffnessmatrix(prepareelements_line(elements, A, E, L))
        0.0        0.0        -1.325e6     1.325e6
 ```
 
-```julia
-julia> E, I, L = 30e6, 510, 60 # [psi, in⁴, in]
-julia> W(x) = -12\\1e3(x)
-julia> F_applied = ([(W, 1, 2, 3)])
-julia> elements = Dict("1"=>(1, 2), "2"=>(2, 3))
-julia> globalstiffnessmatrix(prepareelements_beam(elements, E, I, L))
+```jldoctest; output=false
+E, I, L = 30e6, 510, 60 # [psi, in⁴, in]
+W(x) = -12\\1e3(x)      # [lb/in]
+F_applied = ([(W, 1, 2, 3)])
+elements = Dict("1"=>(1, 2), "2"=>(2, 3))
+globalstiffnessmatrix(prepareelements_beam(elements, E, I, L))
+
+# output
+
 6×6 Matrix{Float64}:
   850000.0      2.55e7  -850000.0      2.55e7        0.0      0.0
        2.55e7   1.02e9       -2.55e7   5.1e8         0.0      0.0
@@ -293,22 +305,25 @@ function globalstiffnessmatrix(
     return K
 end
 
-@doc """
-   reducedglobalstiffnessmatrix(K::Matrix{Float64}, nodes::Union{Vector{Integer}, Vector{Tuple{Integer, Integer}}}, dims::Integer=1)::Matrix{Float64}
+"""
+    reducedglobalstiffnessmatrix(K::Matrix{Float64}, nodes::Union{Vector{Integer}, Vector{Tuple{Integer, Integer}}}, dims::Integer=1)::Matrix{Float64}
 
 Eliminate the rows and columns of `K` according to `nodes` which implies the displacement of the appropriate node is known: e.g. is fixed or a prescribed displacement.
 
 See also: `globalstiffnessmatrix`.
 
 # Examples
-```julia
-julia> A = [0.75, 0.5, 1]   # [in²]
-julia> E = 10.6e6           # [psi]
-julia> L = [12, 9, 8]       # [in]
-julia> elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
-julia> K = globalstiffnessmatrix(prepareelements_line(elements, A, E, L))
-julia> skipnodes = Vector{Integer}([1, 4])
-julia> reducedglobalstiffnessmatrix(K, skipnodes)
+```jldoctest; output=false
+A = [0.75, 0.5, 1]   # [in²]
+E = 10.6e6           # [psi]
+L = [12, 9, 8]       # [in]
+elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
+K = globalstiffnessmatrix(prepareelements_line(elements, A, E, L))
+skipnodes = Vector{Integer}([1, 4])
+reducedglobalstiffnessmatrix(K, skipnodes)
+
+# output
+
 2×2 Matrix{Float64}:
   1.25139e6  -5.88889e5
  -5.88889e5   1.91389e6
@@ -337,8 +352,8 @@ function reducedglobalstiffnessmatrix(
     return K
 end
 
-@doc """
-   solve(elements::Dict{String, LineElements}, nodeboundaryconditions, nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}}, dims::Integer=1)
+"""
+    solve(elements::Dict{String, LineElements}, nodeboundaryconditions, nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}}, dims::Integer=1)
     solve(elements::Dict{String, BeamElements}, nodeboundaryconditions, nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}}, dims::Integer=2)
 
 Perform Finite Element Analysis (FEA) with entries of `elements` and applied boundary conditions by the Direct Stiffness Method according to Hooke's Law of linear-elastic deformation.
@@ -358,13 +373,16 @@ See also: `prepareelements_line`, `prepareelements_beam`, `globalstiffnessmatrix
 # Examples
 ## 1D
 ### `nodeboundaryconditions`:= tuple of nodes with zero displacement.
-```julia
-julia> A, E, L = 4., 30.e6, 30. # [in², psi, in]
-julia> elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
-julia> preparedelements = prepareelements_line(elements, A, E, L)
-julia> nodeboundaryconditions = (1, 4)
-julia> F_applied = [(2, 5.e3), (3, -10.e3)] # (node, force [lb])
-julia> solve(preparedelements, nodeboundaryconditions, F_applied).U
+```jldoctest; output=false
+A, E, L = 4, 30e6, 30               # [in², psi, in]
+elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
+preparedelements = prepareelements_line(elements, A, E, L)
+nodeboundaryconditions = (1, 4)
+F_applied = [(2, 5e3), (3, -10e3)]  # (node, force [lb])
+solve(preparedelements, nodeboundaryconditions, F_applied).U
+
+# output
+
 4-element Vector{Float64}:
   0.0
   0.0
@@ -375,14 +393,17 @@ julia> solve(preparedelements, nodeboundaryconditions, F_applied).U
 ### `nodeboundaryconditions`:= tuple of nodes with zero and prescribed displacements.
 The tuple items are identified in the following way:
 1. Node (1) with zero displacement.
-2. Node (3) has a prescribed displacement of `25.e-3` constrained by the deformation of element `2`.
-```julia
-julia> A, E, L = 4e-4, 210e9, 2 # [m², Pa, m]
-julia> elements = Dict("1"=>(1, 2), "2"=>(2, 3))
-julia> preparedelements = prepareelements_line(elements, A, E, L)
-julia> nodeboundaryconditions = [1, (3, 25.e-3, 2)] # (node, displacement [m], element)
-julia> F_applied = [(2, -5.e3)] # (node, force [N])
-julia> solve(preparedelements, nodeboundaryconditions, F_applied).U
+2. Node (3) has a prescribed displacement of `25e-3` constrained by the deformation of element `2`.
+```jldoctest; output=false
+A, E, L = 4e-4, 210e9, 2                    # [m², Pa, m]
+elements = Dict("1"=>(1, 2), "2"=>(2, 3))
+preparedelements = prepareelements_line(elements, A, E, L)
+nodeboundaryconditions = [1, (3, 25e-3, 2)] # (node, displacement [m], element)
+F_applied = [(2, -5e3)]                     # (node, force [N])
+solve(preparedelements, nodeboundaryconditions, F_applied).U
+
+# output
+
 3-element Vector{Float64}:
  0.0
  0.012440476190476191
@@ -390,15 +411,18 @@ julia> solve(preparedelements, nodeboundaryconditions, F_applied).U
 ```
 
 ## 2D
-```julia
-julia> A, E, L = 1, 10e6, 100 # [in², psi, in]
-julia> angles = [120, 0, 210] # [degrees]
-julia> L = L ./ abs.(cosd.(angles)) # [in]
-julia> elements = Dict("1"=>(1, 2), "2"=>(1, 3), "3"=>(1, 4))
-julia> preparedelements = prepareelements_line(elements, A, E, L, angles, dims=2)
-julia> nodeboundaryconditions = [2, 3, 4]
-julia> F_applied = [(1, (1e3, 1e3))] # (node, (force_x [lb], force_y [lb]))
-julia> solve(preparedelements, nodeboundaryconditions, F_applied, dims=2).U
+```jldoctest; output=false
+A, E, L = 1, 10e6, 100          # [in², psi, in]
+angles = [120, 0, 210]          # [°]
+L = L ./ abs.(cosd.(angles))    # [in]
+elements = Dict("1"=>(1, 2), "2"=>(1, 3), "3"=>(1, 4))
+preparedelements = prepareelements_line(elements, A, E, L, angles, dims=2)
+nodeboundaryconditions = [2, 3, 4]
+F_applied = [(1, (1e3, 1e3))]   # (node, (force_x [lb], force_y [lb]))
+solve(preparedelements, nodeboundaryconditions, F_applied, dims=2).U
+
+# output
+
 8-element Vector{Float64}:
  0.004226497308103743
  0.01577350269189626
@@ -742,8 +766,8 @@ function solve(
     return FiniteElementAnalysisSolution(F, K, U)
 end
 
-@doc """
-   axialstresses(elements::Dict{String, LineElements}, nodedisplacements::Vector{Float64}, dims=1)
+"""
+    axialstresses(elements::Dict{String, LineElements}, nodedisplacements::Vector{Float64}, dims=1)
     axialstresses(elements::Dict{String, BeamElements}, bendingmoments::Vector{Float64}, distancesfromneutralaxis::Union{<:Real, Vector{<:Real}}, dims=2)
 
 Determine the axial stresses present in element-type system.
@@ -761,46 +785,53 @@ See also: `prepareelements_line`, `prepareelements_beam`, `solve`, and `transfor
 - `dims=1`: the number of dimensions being analyzed.
 
 # Examples
-```julia
-julia> A, E, L = 1, 10e6, 100 # [in², psi, in]
-julia> angles = [120, 0, 210] # [degrees]
-julia> L = L ./ abs.(cosd.(angles)) # [in]
-julia> elements = Dict("1"=>(1, 2), "2"=>(1, 3), "3"=>(1, 4))
-julia> preparedelements = prepareelements_line(elements, A, E, L, angles, dims=2)
-julia> nodeboundaryconditions = [2, 3, 4]
-julia> F_applied = [(1, (1e3, 1e3))] # (node, (force_x [lb], force_y [lb]))
-julia> U = solve(preparedelements, nodeboundaryconditions, F_applied, dims=2).U
-julia> axialstresses(preparedelements, U, dims=2) # [psi]
+```jldoctest; output=false
+A, E, L = 1, 10e6, 100          # [in², psi, in]
+angles = [120, 0, 210]          # [°]
+L = L ./ abs.(cosd.(angles))    # [in]
+elements = Dict("1"=>(1, 2), "2"=>(1, 3), "3"=>(1, 4))
+preparedelements = prepareelements_line(elements, A, E, L, angles, dims=2)
+nodeboundaryconditions = [2, 3, 4]
+F_applied = [(1, (1e3, 1e3))]   # (node, (force_x [lb], force_y [lb]))
+U = solve(preparedelements, nodeboundaryconditions, F_applied, dims=2).U
+axialstresses(preparedelements, U, dims=2)
+
+# output
+
 3-element Vector{Float64}:
  -577.3502691896259
  -422.6497308103743
  1000.0000000000001
 ```
 
-```julia
-julia> A, E, I, L = 0.004887968, 200e9, 102e6 * (1/1e3)^4, 6                # [m², Pa, m⁴, m]
-julia> Q, c, t_w = 323473.474 * (1/1e3)^3, 176.5e-3, 6.48e-3                # [m³, m, m]
-julia> W(x) = -10e3(x) # [N/m]
-julia> F_applied = ([(W, 1, 2, 3, 4)])
-julia> x = 0:L:18
-julia> elements = Dict{String, Tuple{Int, Int}}()
-julia> nodeboundaryconditions = []
-julia> for node ∈ 1:1:numberofelements+1
-julia> if node == 1
-julia> push!(nodeboundaryconditions, node)
-julia> else
-julia> elements["\$(node-1)"] = (node-1, node)
-julia> if x[node]%L == 0
-julia> push!(nodeboundaryconditions, (node, (Inf, 0)))
-julia> end
-julia> end
-julia> end
-julia> preparedelements = prepareelements_beam(elements, E, I, L)
-julia> sol = solve(preparedelements, nodeboundaryconditions, F_applied)     # [m]
-julia> V = [sol.F[2i - 1] for i ∈ 1:1:length(sol.F)÷2]                      # [N]
-julia> M = [sol.F[2i] for i ∈ 1:1:length(sol.F)÷2]                          # [N-m]
-julia> maximum(axialstresses(preparedelements, M, c))                       # [Pa]
-519117.6470587983
+```jldoctest; output=false
+A, E, I, L = 0.004887968, 200e9, 102e6 * (1/1e3)^4, 6               # [m², Pa, m⁴, m]
+Q, c, t_w = 323473.474 * (1/1e3)^3, 176.5e-3, 6.48e-3               # [m³, m, m]
+W(x) = -10e3(x)                                                     # [N/m]
+F_applied = ([(W, 1, 2, 3, 4)])
+numberofelements = 10
+L /= numberofelements
+x = 0:L:18
+elements, nodeboundaryconditions = Dict{String, Tuple{Int, Int}}(), []
+for node ∈ 1:1:numberofelements+1
+    if node == 1
+        push!(nodeboundaryconditions, node)
+    else
+        elements["\$(node-1)"] = (node-1, node)
+        if x[node]%6 == 0
+            push!(nodeboundaryconditions, (node, (0, Inf)))
+        end
+    end
+end
+preparedelements = prepareelements_beam(elements, E, I, L)
+sol = solve(preparedelements, nodeboundaryconditions, F_applied)    # [m]
+V = [sol.F[2i - 1] for i ∈ 1:1:length(sol.F)÷2]                     # [N]
+M = [sol.F[2i] for i ∈ 1:1:length(sol.F)÷2]                         # [N-m]
+maximum(axialstresses(preparedelements, M, c))                      # [Pa]
+
+# output
+
+519117.64705877303
 ```
 """
 function axialstresses(
@@ -844,8 +875,8 @@ function axialstresses(
     return axialstresses
 end
 
-@doc """
-   shearstresses(elements, shearforces, firstmomentofareas, bendingthicknesses, dims=2)
+"""
+    shearstresses(elements, shearforces, firstmomentofareas, bendingthicknesses, dims=2)
 
 Determine the axial stresses present in **beam** element system.
 
@@ -859,30 +890,34 @@ See also: `prepareelements_beam`, `solve`, and `transformationmatrixstar`.
 - `dims::Integer=2`: the number of dimensions being analyzed.
 
 # Examples
-```julia
-julia> A, E, I, L = 0.004887968, 200e9, 102e6 * (1/1e3)^4, 6                # [m², Pa, m⁴, m]
-julia> Q, c, t_w = 323473.474 * (1/1e3)^3, 176.5e-3, 6.48e-3                # [m³, m, m]
-julia> W(x) = -10e3(x) # [N/m]
-julia> F_applied = ([(W, 1, 2, 3, 4)])
-julia> x = 0:L:18
-julia> elements = Dict{String, Tuple{Int, Int}}()
-julia> nodeboundaryconditions = []
-julia> for node ∈ 1:1:numberofelements+1
-julia> if node == 1
-julia> push!(nodeboundaryconditions, node)
-julia> else
-julia> elements["\$(node-1)"] = (node-1, node)
-julia> if x[node]%L == 0
-julia> push!(nodeboundaryconditions, (node, (Inf, 0)))
-julia> end
-julia> end
-julia> end
-julia> preparedelements = prepareelements_beam(elements, E, I, L)
-julia> sol = solve(preparedelements, nodeboundaryconditions, F_applied)     # [m]
-julia> V = [sol.F[2i - 1] for i ∈ 1:1:length(sol.F)÷2]                      # [N]
-julia> M = [sol.F[2i] for i ∈ 1:1:length(sol.F)÷2]                          # [N-m]
-julia> maximum(shearstresses(elements, V, Q, t_w))                          # [Pa]
-626638.3758201257
+```jldoctest; output=false
+A, E, I, L = 0.004887968, 200e9, 102e6 * (1/1e3)^4, 6               # [m², Pa, m⁴, m]
+Q, c, t_w = 323473.474 * (1/1e3)^3, 176.5e-3, 6.48e-3               # [m³, m, m]
+W(x) = -10e3(x)                                                     # [N/m]
+F_applied = ([(W, 1, 2, 3, 4)])
+numberofelements = 10
+L /= numberofelements
+x = 0:L:18
+elements, nodeboundaryconditions = Dict{String, Tuple{Int, Int}}(), []
+for node ∈ 1:1:numberofelements+1
+    if node == 1
+        push!(nodeboundaryconditions, node)
+    else
+        elements["\$(node-1)"] = (node-1, node)
+        if x[node]%6 == 0
+            push!(nodeboundaryconditions, (node, (0, Inf)))
+        end
+    end
+end
+preparedelements = prepareelements_beam(elements, E, I, L)
+sol = solve(preparedelements, nodeboundaryconditions, F_applied)    # [m]
+V = [sol.F[2i - 1] for i ∈ 1:1:length(sol.F)÷2]                     # [N]
+M = [sol.F[2i] for i ∈ 1:1:length(sol.F)÷2]                         # [N-m]
+maximum(shearstresses(preparedelements, V, Q, t_w))                 # [Pa]
+
+# output
+
+366682.5532475419
 ```
 """
 function shearstresses(
