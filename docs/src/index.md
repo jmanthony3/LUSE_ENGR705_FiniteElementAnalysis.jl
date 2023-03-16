@@ -2,13 +2,18 @@
 CurrentModule = FiniteElementAnalysis
 ```
 
-# FiniteElementAnalysis
+# FiniteElementAnalysis.jl
 
 Documentation for [FiniteElementAnalysis](https://github.com/jmanthony3/FiniteElementAnalysis.jl).
 
-```@index
+```@contents
 ```
 
+## Functions
 ```@autodocs
 Modules = [FiniteElementAnalysis]
+```
+
+## Index
+```@index
 ```
