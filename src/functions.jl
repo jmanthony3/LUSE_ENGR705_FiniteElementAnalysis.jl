@@ -44,7 +44,16 @@ function transformationmatrixstar(θ::Real, isdegrees::Bool=true)::Matrix{Float6
 end
 
 """
-    prepareelements_line(elements, elementareas, elementmoduli, elementlengths, nodeangles=0, isdegrees=true; dims=1, stiffnesscoefficients=nothing)::Dict{String, LineElements}
+    prepareelements_line(
+        elements,
+        elementareas,
+        elementmoduli,
+        elementlengths,
+        nodeangles=0,
+        isdegrees=true;
+        dims=1,
+        stiffnesscoefficients=nothing
+    )::Dict{String, LineElements}
 
 Return the dictionary with properties specific to those **line** elements between node pairs.
 
@@ -111,7 +120,16 @@ function prepareelements_line(
 end
 
 """
-    prepareelements_beam(elements, elementmoduli, elementareasofinertia, elementlengths, nodeangles=0, isdegrees=true; dims=2, stiffnesscoefficients=nothing)::Dict{String, BeamElements}
+    prepareelements_beam(
+        elements,
+        elementmoduli,
+        elementareasofinertia,
+        elementlengths,
+        nodeangles=0,
+        isdegrees=true;
+        dims=2,
+        stiffnesscoefficients=nothing
+    )::Dict{String, BeamElements}
 
 Return the dictionary with properties specific to those **beam** elements between node pairs.
 
@@ -176,8 +194,14 @@ function prepareelements_beam(
 end
 
 """
-    globalstiffnessmatrix(elements::Dict{String, LineElements}, dims::Integer=1)::Matrix{Float64}
-    globalstiffnessmatrix(elements::Dict{String, BeamElements}, dims::Integer=2)::Matrix{Float64}
+    globalstiffnessmatrix(
+        elements::Dict{String, LineElements},
+        dims::Integer=1
+    )::Matrix{Float64}
+    globalstiffnessmatrix(
+        elements::Dict{String, BeamElements},
+        dims::Integer=2
+    )::Matrix{Float64}
 
 Assembles the global stiffness matrix from the dictionary, `elements`.
 
@@ -306,7 +330,12 @@ function globalstiffnessmatrix(
 end
 
 """
-    reducedglobalstiffnessmatrix(K::Matrix{Float64}, nodes::Union{Vector{Integer}, Vector{Tuple{Integer, Integer}}}, dims::Integer=1)::Matrix{Float64}
+    reducedglobalstiffnessmatrix(
+        K::Matrix{Float64},
+        nodes::Union{Vector{Integer},
+        Vector{Tuple{Integer, Integer}}},
+        dims::Integer=1
+    )::Matrix{Float64}
 
 Eliminate the rows and columns of `K` according to `nodes` which implies the displacement of the appropriate node is known: e.g. is fixed or a prescribed displacement.
 
@@ -353,8 +382,18 @@ function reducedglobalstiffnessmatrix(
 end
 
 """
-    solve(elements::Dict{String, LineElements}, nodeboundaryconditions, nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}}, dims::Integer=1)
-    solve(elements::Dict{String, BeamElements}, nodeboundaryconditions, nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}}, dims::Integer=2)
+    solve(
+        elements::Dict{String, LineElements},
+        nodeboundaryconditions,
+        nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}},
+        dims::Integer=1
+    )::FiniteElementAnalysisSolution
+    solve(
+        elements::Dict{String, BeamElements},
+        nodeboundaryconditions,
+        nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}},
+        dims::Integer=2
+    )::FiniteElementAnalysisSolution
 
 Perform Finite Element Analysis (FEA) with entries of `elements` and applied boundary conditions by the Direct Stiffness Method according to Hooke's Law of linear-elastic deformation.
 
@@ -767,8 +806,17 @@ function solve(
 end
 
 """
-    axialstresses(elements::Dict{String, LineElements}, nodedisplacements::Vector{Float64}, dims=1)
-    axialstresses(elements::Dict{String, BeamElements}, bendingmoments::Vector{Float64}, distancesfromneutralaxis::Union{<:Real, Vector{<:Real}}, dims=2)
+    axialstresses(
+        elements::Dict{String, LineElements},
+        nodedisplacements::Vector{Float64},
+        dims=1
+    )::Vector{Float64}
+    axialstresses(
+        elements::Dict{String, BeamElements},
+        bendingmoments::Vector{Float64},
+        distancesfromneutralaxis::Union{<:Real, Vector{<:Real}},
+        dims=2
+    )::Vector{Float64}
 
 Determine the axial stresses present in element-type system.
 
@@ -876,7 +924,13 @@ function axialstresses(
 end
 
 """
-    shearstresses(elements, shearforces, firstmomentofareas, bendingthicknesses, dims=2)
+    shearstresses(
+        elements,
+        shearforces,
+        firstmomentofareas,
+        bendingthicknesses,
+        dims=2
+    )::Vector{Float64}
 
 Determine the axial stresses present in **beam** element system.
 
