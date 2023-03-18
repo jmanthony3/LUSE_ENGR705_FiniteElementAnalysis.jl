@@ -9,8 +9,9 @@ LinearSolve = "7ed4a6bd-45f5-4d41-b270-4a48e9bafcae"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
-Symbolics = "5"
 julia = "1"
+LinearSolve = "1"
+Symbolics = "5"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
