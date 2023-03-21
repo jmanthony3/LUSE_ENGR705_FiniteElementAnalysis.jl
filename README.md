@@ -12,7 +12,7 @@ This package provides:
 - Customization for which LinearSolve.jl [algorithm](https://docs.sciml.ai/LinearSolve/stable/basics/Preconditioners/) to employ.
 
 Key comments:
-- Currently, the global stiffness matrix, $\mathbf{K}$, is constructed according to the *Direct Stiffness Method*.
+- Currently, the global stiffness matrix, $\mathbf{K}$, is constructed according to the *Minimum Potential Energy Method*.
 - The `solve()` function heavily leverages the [LinearSolve.jl](https://github.com/SciML/LinearSolve.jl) package to solve the linear system of equations: $\vec{F} = \mathbf{K}\vec{U}$.
 - Package can currently solve most truss analysis problems and some beams with distributed loading.
 
@@ -20,8 +20,10 @@ Key comments:
 - [x] 2D
   - [x] "line" element types
   - [x] "beam" element types
+  - [ ] "triangular" element types
+  - [ ] Checks for symmetry
 - [ ] 3D
-  - [ ] Extend 2D elements
+  - [ ] Extend 2D elements for third component direction
   - [ ] Other 3D element types:
     - [ ] "quadralateral"
     - [ ] "tetrahedronal"
@@ -30,10 +32,8 @@ Key comments:
 - [ ] Shear and moment diagrams
 - [ ] Support for mixed element types in `solve()`
 - [ ] Mesh refinement function
-- [ ] Option to solve FEA problems according to other techniques:
-  - [ ] *Minimum Potential Energy*
-  - [ ] etcetera...
-- [ ] Extensive exception handling and error testing for each method
+- [ ] Option to solve FEA problems according to other techniques
+- [ ] Extensive exception handling and error testing for each method of package
 
 ## Citing
 
