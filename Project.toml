@@ -1,7 +1,7 @@
 name = "FiniteElementAnalysis"
 uuid = "c185b64a-f1cc-46a9-b3a8-aef9edaf193f"
 authors = ["Joby M. Anthony III"]
-version = "0.1.0"
+version = "0.0.0-dev"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
