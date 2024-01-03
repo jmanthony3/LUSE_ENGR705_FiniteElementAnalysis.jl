@@ -22,25 +22,55 @@ struct BeamElements
     K       ::Matrix{Float64}
 end
 
-struct FiniteElementAnalysisSolution
+struct TriangularElements
+    nodes   ::NamedTuple{(:i, :j, :m)}
+    # coords  ::NamedTuple{(:i, :j, :m)}
+    coords  ::Vector{Tuple{Float64, Float64}}
+    E       ::Float64
+    ν       ::Float64
+    t       ::Float64
+    A       ::Float64
+    θ       ::Float64
+    k       ::Float64
+    D       ::Matrix{Float64}
+    B       ::Matrix{Float64}
+    K       ::Matrix{Float64}
+end
+
+struct FEA
     F::Vector{Float64}
     K::Matrix{Float64}
     U::Vector{Float64}
 end
 
-function transformationmatrix(θ::Real, isdegrees::Bool=true)::Matrix{Float64}
+function transformationmatrix(θ::Real, isdegrees::Bool=true; elementtype="line")::Matrix{Float64}
     C, S = isdegrees ? (cosd(θ), sind(θ)) : (cos(θ), sin(θ))
-    return float.([
-        [C S 0 0];
-        [-S C 0 0];
-        [0 0 C S];
-        [0 0 -S C]
-    ])
+    if elementtype == "line" || elementtype == "beam"
+        return float.([
+            [C S 0 0];
+            [-S C 0 0];
+            [0 0 C S];
+            [0 0 -S C]
+        ])
+    elseif elementtype == "triangular"
+        return float.([
+            [C S 0 0 0 0];
+            [-S C 0 0 0 0];
+            [0 0 C S 0 0];
+            [0 0 -S C 0 0];
+            [0 0 0 0 C S];
+            [0 0 0 0 -S C]
+        ])
+    end
 end
 
-function transformationmatrixstar(θ::Real, isdegrees::Bool=true)::Matrix{Float64}
+function transformationmatrixstar(θ::Real, isdegrees::Bool=true; elementtype="line")::Matrix{Float64}
     C, S = isdegrees ? (cosd(θ), sind(θ)) : (cos(θ), sin(θ))
-    return float.([[C S 0 0]; [0 0 C S]])
+    if elementtype == "line" || elementtype == "beam"
+        return float.([[C S 0 0]; [0 0 C S]])
+    elseif elementtype == "triangular"
+        return float.([[C S 0 0 0 0]; [0 0 C S 0 0]; [0 0 0 0 C S]])
+    end
 end
 
 """
@@ -194,6 +224,111 @@ function prepareelements_beam(
 end
 
 """
+    prepareelements_triangular(
+        elements,
+        coordinates,
+        elementmoduli,
+        poissonsratios,
+        elementthicknesses,
+        nodeangles=0,
+        isdegrees=true;
+        dims=2,
+        planestressstrain="stress",
+        elementareas=nothing
+    )::Dict{String, TriangularElements}
+
+Return the dictionary with properties specific to those **linear**, **triangular** elements between node triplets.
+
+See also: `globalstiffnessmatrix` and `solve`.
+
+# Arguments
+- `elements::Dict{String, NamedTuple{(:i, :j, :m), Tuple{Int, Int, Int}}}`: the dictionary of "element"=>(node 1, node 2, node 3) for the element between node triplets.
+- `coordinates::Dict{String, <:Tuple{<:Real, <:Real}}`: the dictionary of "node"=>(x, y) coordinate pairs for each node.
+- `elementmoduli::Union{<:Real, Vector{<:Real}}`: the elastic modulus of each element.
+- `poissonsratios::Union{<:Real, Vector{<:Real}}`: the Poisson's ratio for each element.
+- `elementthicknesses::Union{<:Real, Vector{<:Real}}`: the plane thickness of each element.
+- `nodeangles::Union{<:Real, Vector{<:Real}}=0`: the angle between the global and local coordinate systems of each element.
+- `isdegrees::Bool=true`: control value whether elements of `nodeangles` is degrees (true) or radians (false).
+- `dims::Integer=2`: the number of dimensions being analyzed.
+- `planestressstrain::String="stress"`: if 2D analysis, specify whether plane `"stress"` or `"strain"` assumption applies.
+- `elementareas::Union{Nothing, <:Real, Vector{<:Real}}=nothing`: the area of each element, if already known.
+
+# Examples
+```jldoctest; output=false
+E, ν, t = 30e6, 0.3, 1  # [psi, n/a, in]
+elements = Dict(
+    "1"=>(i=1, j=3, m=2),
+    "2"=>(i=1, j=4, m=3)
+)
+coords = Dict(
+    "1"=>(0, 0),
+    "2"=>(0, 10),
+    "3"=>(20, 10),
+    "4"=>(20, 0)
+)
+prepareelements_triangular(elements, coords, E, ν, t)
+
+# output
+
+Dict{String, FiniteElementAnalysis.TriangularElements} with 2 entries:
+  "1" => TriangularElements((i = 1, j = 3, m = 2), [(0.0, 0.0), (20.0, 10.0), (0.0, 10.0)], 3.0e7, 0.3, 1.0, 100.0, 0.0, 3.2967032967032965e7, [3.2967032967032965e7 9.89010989010989e6 0.0; 9.89010989010989e6 3.2967032967032965e7 0.0; 0.0 0.0 1.1538461538461538e7], [0.0 0.0 … -0.05 0.0; 0.0 -0.1 … 0.0 0.1; -0.1 0.0 … 0.1 -0.05], [1.1538461538461538e7 0.0 … -1.1538461538461538e7 5.769230769230769e6; 0.0 3.2967032967032965e7 … 4.945054945054945e6 -3.2967032967032965e7; … ; -1.1538461538461538e7 4.945054945054945e6 … 1.978021978021978e7 -1.0714285714285715e7; 5.769230769230769e6 -3.2967032967032965e7 … -1.0714285714285715e7 3.585164835164835e7])
+  "2" => TriangularElements((i = 1, j = 4, m = 3), [(0.0, 0.0), (20.0, 0.0), (20.0, 10.0)], 3.0e7, 0.3, 1.0, 100.0, 0.0, 3.2967032967032965e7, [3.2967032967032965e7 9.89010989010989e6 0.0; 9.89010989010989e6 3.2967032967032965e7 0.0; 0.0 0.0 1.1538461538461538e7], [-0.05 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.1; 0.0 -0.05 … 0.1 0.0], [8.241758241758241e6 0.0 … 0.0 -4.945054945054945e6; 0.0 2.8846153846153845e6 … -5.769230769230769e6 0.0; … ; 0.0 -5.769230769230769e6 … 1.1538461538461538e7 0.0; -4.945054945054945e6 0.0 … 0.0 3.2967032967032965e7])
+```
+"""
+function prepareelements_triangular(
+    elements                ::Dict{String, NamedTuple{(:i, :j, :m), Tuple{Int, Int, Int}}},
+    coordinates             ::Dict{String, <:Tuple{<:Real, <:Real}},
+    elementmoduli           ::Union{<:Real, Vector{<:Real}},
+    poissonsratios          ::Union{<:Real, Vector{<:Real}},
+    elementthicknesses      ::Union{<:Real, Vector{<:Real}},
+    nodeangles              ::Union{<:Real, Vector{<:Real}}=0,
+    isdegrees               ::Bool=true;
+    dims                    ::Integer=2,
+    planestressstrain       ::String="stress",
+    elementareas            ::Union{Nothing, <:Real, Vector{<:Real}}=nothing,
+)::Dict{String, TriangularElements}
+    preparedelementsdictionary = Dict{String, TriangularElements}()
+    for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
+        i = parse(Int64, key)
+        nodes, coords = values(value), Vector{Tuple{Float64, Float64}}([])
+        for node ∈ nodes
+            push!(coords, coordinates["$node"])
+        end
+        E = float(length(elementmoduli) == 1 ? elementmoduli[1] : elementmoduli[i])
+        ν = float(length(poissonsratios) == 1 ? poissonsratios[1] : poissonsratios[i])
+        t = float(length(elementthicknesses) == 1 ? elementthicknesses[1] : elementthicknesses[i])
+        θ = if isdegrees
+            float(length(nodeangles) == 1 ? nodeangles[1] : nodeangles[i])
+        else
+            rad2deg(length(nodeangles) == 1 ? nodeangles[1] : nodeangles[i])
+        end
+        (xᵢ, yᵢ), (xⱼ, yⱼ), (xₘ, yₘ) = coords
+        A = if isnothing(elementareas)
+            2\(xᵢ * (yⱼ - yₘ) + xⱼ * (yₘ - yᵢ) + xₘ * (yᵢ - yⱼ))
+        else
+            float(length(elementareas) == 1 ? elementareas[1] : elementareas[i])
+        end
+        α = [xⱼ * yₘ - yⱼ * xₘ, yᵢ * xₘ - xᵢ * yₘ, xᵢ * yⱼ - yᵢ * xⱼ]
+        β = [yⱼ - yₘ, yₘ - yᵢ, yᵢ - yⱼ]
+        γ = [xₘ - xⱼ, xᵢ - xₘ, xⱼ - xᵢ]
+        Bᵢ = [[β[1] 0]; [0 γ[1]]; [γ[1] β[1]]]
+        Bⱼ = [[β[2] 0]; [0 γ[2]]; [γ[2] β[2]]]
+        Bₘ = [[β[3] 0]; [0 γ[3]]; [γ[3] β[3]]]
+        B = 2A .\ [Bᵢ Bⱼ Bₘ]
+        if planestressstrain == "stress"
+            k = E/(1 - ν^2)
+            D = k .* [[1 ν 0]; [ν 1 0]; [0 0 2\(1 - ν)]]
+        elseif planestressstrain == "strain"
+            k = E/((1 + ν) * (1 - 2ν))
+            D = k .* [[1-ν ν 0]; [ν 1-ν 0]; [0 0 2\(1 - 2ν)]]
+        end
+        K = t * A * B' * D * B
+        preparedelementsdictionary[key] = TriangularElements(value, coords, E, ν, t, A, θ, k, D, B, K)
+    end
+    return preparedelementsdictionary
+end
+
+"""
     globalstiffnessmatrix(
         elements::Dict{String, LineElements},
         dims::Integer=1
@@ -202,10 +337,14 @@ end
         elements::Dict{String, BeamElements},
         dims::Integer=2
     )::Matrix{Float64}
+    globalstiffnessmatrix(
+        elements::Dict{String, TriangularElements},
+        dims::Integer=2
+    )::Matrix{Float64}
 
 Assembles the global stiffness matrix from the dictionary, `elements`.
 
-See also: `prepareelements_line`, `prepareelements_beam`, and `transformationmatrix`.
+See also: `prepareelements_line`, `prepareelements_beam`, `prepareelements_triangular`, and `transformationmatrix`.
 
 # Arguments
 - `elements`: entries infer `localstiffnessmatrices` and `nodeconnections` for each element in local coordinate system transformed by angle.
@@ -244,6 +383,35 @@ globalstiffnessmatrix(prepareelements_beam(elements, E, I, L))
        2.55e7   5.1e8         0.0      2.04e9       -2.55e7   5.1e8
        0.0      0.0     -850000.0     -2.55e7   850000.0     -2.55e7
        0.0      0.0           2.55e7   5.1e8        -2.55e7   1.02e9
+```
+
+```jldoctest; output=false
+# problem 6-3.1
+E, ν, t = 30e6, 0.3, 1  # [psi, n/a, in]
+elements = Dict(
+    "1"=>(i=1, j=3, m=2),
+    "2"=>(i=1, j=4, m=3)
+)
+coords = Dict(
+    "1"=>(0, 0),
+    "2"=>(0, 10),
+    "3"=>(20, 10),
+    "4"=>(20, 0)
+)
+elements = prepareelements_triangular(elements, coords, E, ν, t)
+globalstiffnessmatrix(elements) .* 0.91/375e3
+
+# output
+
+8×8 Matrix{Float64}:
+  48.0    0.0  -28.0   14.0    0.0  -26.0  -20.0   12.0
+   0.0   87.0   12.0  -80.0  -26.0    0.0   14.0   -7.0
+ -28.0   12.0   48.0  -26.0  -20.0   14.0    0.0    0.0
+  14.0  -80.0  -26.0   87.0   12.0   -7.0    0.0    0.0
+   0.0  -26.0  -20.0   12.0   48.0    0.0  -28.0   14.0
+ -26.0    0.0   14.0   -7.0    0.0   87.0   12.0  -80.0
+ -20.0   14.0    0.0    0.0  -28.0   12.0   48.0  -26.0
+  12.0   -7.0    0.0    0.0   14.0  -80.0  -26.0   87.0
 ```
 """
 function globalstiffnessmatrix(
@@ -288,6 +456,54 @@ function globalstiffnessmatrix(
     nodeconnections = Vector{Tuple{Integer, Integer}}([])
     for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
         push!(nodeconnections, value.nodes)
+    end
+    n = maximum(maximum(nodeconnections))
+    # K = zeros((n, n) .* dims)
+    K = (dims == 2 ? zeros((2n, 2n)) : zeros((4n, 4n)))
+    for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
+        k = parse(Int64, key)
+        if dims == 2
+            p = 0
+            for node ∈ value.nodes
+                for i ∈ 1:1:2
+                    q = 0
+                    for n ∈ value.nodes
+                        for j ∈ 1:1:2
+                            # println("node=$node, n=$n: [2(node - 1) + i, 2(n - 1) + j] = $([2(node - 1) + i, 2(n - 1) + j]) <- [i + p, j + q] = [$(i + p), $(j + q)]")
+                            K[2(node - 1) + i, 2(n - 1) + j] += value.K[i + p, j + q]
+                        end
+                        q += 2
+                    end
+                end
+                p += 2
+            end
+        else
+            p = 0
+            for node ∈ value.nodes
+                for i ∈ 1:1:2
+                    q = 0
+                    for n ∈ value.nodes
+                        for j ∈ 1:1:2
+                            # println("node=$node, n=$n: [2(node - 1) + i, 2(n - 1) + j] = $([2(node - 1) + i, 2(n - 1) + j]) <- [i + p, j + q] = [$(i + p), $(j + q)]")
+                            K[2(node - 1) + i, 2(n - 1) + j] += value.K[i + p, j + q]
+                        end
+                        q += 2
+                    end
+                end
+                p += 2
+            end
+        end
+    end
+    return K
+end
+
+function globalstiffnessmatrix(
+    elements    ::Dict{String, TriangularElements};
+    dims        ::Integer=2,
+)::Matrix{Float64}
+    nodeconnections = Vector{Tuple{Integer, Integer, Integer}}([])
+    for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
+        push!(nodeconnections, values(value.nodes))
     end
     n = maximum(maximum(nodeconnections))
     # K = zeros((n, n) .* dims)
@@ -387,13 +603,13 @@ end
         nodeboundaryconditions,
         nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}},
         dims::Integer=1
-    )::FiniteElementAnalysisSolution
+    )::FEA
     solve(
         elements::Dict{String, BeamElements},
         nodeboundaryconditions,
         nodeforces::Vector{<:Tuple{Integer, Vararg{<:Real}}},
         dims::Integer=2
-    )::FiniteElementAnalysisSolution
+    )::FEA
 
 Perform Finite Element Analysis (FEA) with entries of `elements` and applied boundary conditions by the Direct Stiffness Method according to Hooke's Law of linear-elastic deformation.
 
@@ -410,8 +626,9 @@ See also: `prepareelements_line`, `prepareelements_beam`, `globalstiffnessmatrix
 - `alg=nothing`: algorithm of choice to solve linear system of equations according to [LinearSolve.jl](https://docs.sciml.ai/LinearSolve/stable/solvers/solvers/).
 
 # Examples
-## 1D
-### `nodeboundaryconditions`:= tuple of nodes with zero displacement.
+## `LineElements`
+### 1D
+#### `nodeboundaryconditions`:= tuple of nodes with zero displacement.
 ```jldoctest; output=false
 A, E, L = 4, 30e6, 30               # [in², psi, in]
 elements = Dict("1"=>(1, 2), "2"=>(2, 3), "3"=>(3, 4))
@@ -429,7 +646,7 @@ solve(preparedelements, nodeboundaryconditions, F_applied).U
   0.0
 ```
 
-### `nodeboundaryconditions`:= tuple of nodes with zero and prescribed displacements.
+#### `nodeboundaryconditions`:= tuple of nodes with zero and prescribed displacements.
 The tuple items are identified in the following way:
 1. Node (1) with zero displacement.
 2. Node (3) has a prescribed displacement of `25e-3` constrained by the deformation of element `2`.
@@ -449,7 +666,7 @@ solve(preparedelements, nodeboundaryconditions, F_applied).U
  0.025
 ```
 
-## 2D
+### 2D
 ```jldoctest; output=false
 A, E, L = 1, 10e6, 100          # [in², psi, in]
 angles = [120, 0, 210]          # [°]
@@ -472,6 +689,40 @@ solve(preparedelements, nodeboundaryconditions, F_applied, dims=2).U
  0.0
  0.0
 ```
+
+## `TriangularElements`
+### 2D
+```jldoctest; output=false
+# problem 6-3.1
+E, ν, t = 30e6, 0.3, 1  # [psi, n/a, in]
+T(x) = (0, -5e3(x))     # [lb/in]
+F_applied = [(3, T(10) ./ 2), (4, T(10) ./ 2)]
+elements = Dict(
+    "1"=>(i=1, j=3, m=2),
+    "2"=>(i=1, j=4, m=3)
+)
+coords = Dict(
+    "1"=>(0, 0),
+    "2"=>(0, 10),
+    "3"=>(20, 10),
+    "4"=>(20, 0)
+)
+nodeboundaryconditions = [1, 2]
+preparedelements = prepareelements_triangular(elements, coords, E, ν, t)
+solve(preparedelements, nodeboundaryconditions, F_applied).U
+
+# output
+
+8-element Vector{Float64}:
+  0.0
+  0.0
+  0.0
+  0.0
+  0.002501467840939408
+ -0.013759807846276971
+ -0.0030427008273285192
+ -0.01466186282359215
+```
 """
 function solve(
     elements    ::Dict{String, LineElements},
@@ -479,7 +730,7 @@ function solve(
     nodeforces  ::Union{Vector{<:Tuple{Integer, <:Real}}, Vector{<:Tuple{Integer, Tuple{<:Real, <:Real}}}};
     dims        ::Integer=1,
     alg=nothing
-)::FiniteElementAnalysisSolution
+)::FEA
     nodeconnections, stiffnesscoefficients = Vector{Tuple{Integer, Integer}}([]), Vector{Float64}([])
     for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
         push!(nodeconnections, value.nodes)
@@ -609,7 +860,7 @@ function solve(
         end
     end
     F = K*U
-    return FiniteElementAnalysisSolution(F, K, U)
+    return FEA(F, K, U)
 end
 
 function solve(
@@ -618,7 +869,7 @@ function solve(
     nodeforces  ::Vector{<:Union{Tuple{Function, Vararg{Integer}}, Tuple{Integer, Tuple{<:Real, <:Real}}, Tuple{Integer, Tuple{<:Real, <:Real, <:Real}}}};
     dims        ::Integer=2,
     alg=nothing
-)::FiniteElementAnalysisSolution
+)::FEA
     nodeconnections, stiffnesscoefficients = Vector{Tuple{Integer, Integer}}([]), Vector{Float64}([])
     for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
         push!(nodeconnections, value.nodes)
@@ -802,7 +1053,206 @@ function solve(
         # end
     end
     F = K*U
-    return FiniteElementAnalysisSolution(F, K, U)
+    return FEA(F, K, U)
+end
+
+function solve(
+    elements    ::Dict{String, TriangularElements},
+    nodeboundaryconditions,
+    nodeforces  ::Vector{<:Union{Tuple{NTuple{2, Union{<:Real, Function}}, Vararg{Integer}}, Tuple{Integer, Tuple{<:Real, <:Real}}, Tuple{Integer, Tuple{<:Real, <:Real, <:Real}}}};
+    dims        ::Integer=2,
+    alg=nothing
+)::FEA
+    nodeconnections, stiffnesscoefficients = Vector{Tuple{Integer, Integer, Integer}}([]), Vector{Float64}([])
+    for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
+        push!(nodeconnections, values(value.nodes))
+        push!(stiffnesscoefficients, value.k)
+    end
+    K = globalstiffnessmatrix(elements, dims=dims)
+    n = maximum(maximum(nodeconnections))
+    # K = zeros((n, n) .* dims)
+    F = zeros(dims == 2 ? 2n : 4n)
+    for nodeforce ∈ nodeforces
+        if isa(nodeforce[1], Function)
+            @variables x
+            d_nodeforces = Differential(x)(nodeforce[1](x))
+            d_nodeforces_expanded = expand_derivatives(d_nodeforces)
+            remainingvariables = Symbolics.get_variables(d_nodeforces_expanded)
+            for (key, value) ∈ sort(collect(pairs(elements)), by=x->x[1])
+                forcekeys, forcenodes = [], []
+                for node ∈ value.nodes
+                    if in(node, nodeforce[2:end])
+                        push!(forcekeys, findall(x->x==node, value.nodes)[1])
+                        push!(forcenodes, node)
+                    end
+                end
+                if length(forcenodes) == 2
+                    if length(remainingvariables) == 0
+                        a = getindex(value.coords[forcekeys[1]])
+                        b = getindex(value.coords[forcekeys[2]])
+                        i, j = forcenodes
+                        Δx = value.coords[b][1] - value.coords[a][1]
+                        Δy = value.coords[b][2] - value.coords[a][2]
+                        F[2i - 1]   += nodeforce[1][1](Δx)/2
+                        F[2i]       += nodeforce[1][2](Δy)/2
+                        F[2j - 1]   += nodeforce[1][1](Δx)/2
+                        F[2j]       += nodeforce[1][2](Δy)/2
+                    end
+                end
+            end
+        else
+            if dims == 1
+                i = 0
+                for force ∈ nodeforce[2]
+                    F[2nodeforce[1] - 1 + i] += force
+                    i += 1
+                end
+            elseif dims == 2
+                i = 0
+                for force ∈ nodeforce[2]#[2:3]
+                    F[2nodeforce[1] - 1 + i] += force
+                    i += 1
+                end
+            end
+        end
+    end
+    if dims == 1
+        fixednodes = Vector{Tuple{Integer, Integer}}([])
+    elseif dims == 2
+        fixednodes = Vector{Tuple{Integer, Integer}}([])
+    end
+    for nbc ∈ nodeboundaryconditions
+        if dims == 1
+            if length(nbc) == 1 || nbc[2] == (0, 0)
+                push!(fixednodes, (nbc[1], 0))
+            end
+        elseif dims == 2
+            if length(nbc) == 1 || nbc[2] == (0, 0)
+                push!(fixednodes, (nbc[1], 0))
+            end
+        end
+    end
+    skipnodes = deepcopy(fixednodes)
+    if length(fixednodes) != length(nodeboundaryconditions)
+        for nbc ∈ nodeboundaryconditions
+            if nbc[1] ∉ fixednodes
+                if dims == 2
+                    if length(nbc) != 1
+                        if nbc[2][1] == Inf ||  nbc[2][2] == Inf
+                            push!(skipnodes, (nbc[1], 1))
+                        end
+                    end
+                end
+                inspectnodes = findall(x->x!=nbc[1], nodeconnections)
+                for node ∈ inspectnodes
+                    if node ∉ fixednodes
+                        if dims == 1
+                            if length(nbc) != 1
+                                if nbc[2][1] != 0 && nbc[2][1] != Inf
+                                    if length(stiffnesscoefficients) == 1
+                                        F[node] += [(stiffnesscoefficients[1]*nbc[2][1])...]
+                                    else
+                                        F[node] += [(stiffnesscoefficients[nbc[3]]*nbc[2][1])...]
+                                    end
+                                elseif nbc[2][2] != 0 && nbc[2][2] != Inf
+                                    if length(stiffnesscoefficients) == 1
+                                        F[node] += [(stiffnesscoefficients[1]*nbc[2][2])...]
+                                    else
+                                        F[node] += [(stiffnesscoefficients[nbc[3]]*nbc[2][2])...]
+                                    end
+                                end
+                            end
+                        elseif dims == 2
+                            if length(nbc) != 1
+                                if nbc[2][1] != 0 && nbc[2][1] != Inf
+                                    if length(stiffnesscoefficients) == 1
+                                        F[node] += [(stiffnesscoefficients[1]*nbc[2][1])...]
+                                    else
+                                        F[node] += [(stiffnesscoefficients[nbc[3]]*nbc[2][1])...]
+                                    end
+                                elseif nbc[2][2] != 0 && nbc[2][2] != Inf
+                                    if length(stiffnesscoefficients) == 1
+                                        F[node] += [(stiffnesscoefficients[1]*nbc[2][2])...]
+                                    else
+                                        F[node] += [(stiffnesscoefficients[nbc[3]]*nbc[2][2])...]
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    skipnodes = sort(collect(skipnodes), by=x->x[1])
+    K_reduced = (skipnodes != [] ? reducedglobalstiffnessmatrix(K, skipnodes, dims=dims) : K)
+    k = 0
+    for node ∈ skipnodes
+        if dims == 1
+            if node[2] == 0
+                F = F[begin:end .!= 2node[1] - 1 - k]
+                k += 1
+                F = F[begin:end .!= 2node[1] - k]
+            else
+                F = F[begin:end .!= 2node[1] - 1 + node[2] - 1 - k]
+            end
+        elseif dims == 2
+            if node[2] == 0
+                F = F[begin:end .!= 2node[1] - 1 - k]
+                k += 1
+                F = F[begin:end .!= 2node[1] - k]
+            else
+                F = F[begin:end .!= 2node[1] - 1 + node[2] - 1 - k]
+            end
+        end
+        k += 1
+    end
+    U_reduced = try
+        LinearSolve.solve(LinearProblem(K_reduced, F), alg).u
+    catch error
+        if isa(error, SingularException)
+            throw(ErrorException("Error occurred in 'LinearSolve.jl': $error\nThis typically happens with a badly conditioned matrix (cond(K) = $(cond(K_reduced)))."))
+        end
+    end
+    U = U_reduced
+    for skipnode ∈ skipnodes
+        if skipnode[2] == 0
+            insert!(U, 2skipnode[1] - 1, 0)
+            insert!(U, 2skipnode[1], 0)
+        else
+            insert!(U, 2skipnode[1] - 1 + skipnode[2] - 1, 0)
+        end
+        # if length(nbc) == 1
+        # else
+        #     if dims == 1
+        #         if length(nbc) == 1
+        #             insert!(U, 2nbc[1]-1, 0)
+        #             insert!(U, 2nbc[1], 0)
+        #         else
+        #             if nbc[2][1] != Inf
+        #                 insert!(U, 2nbc[1]-1, nbc[2][1])
+        #             end
+        #             if nbc[2][2] != Inf
+        #                 insert!(U, 2nbc[1], nbc[2][2])
+        #             end
+        #         end
+        #     elseif dims == 2
+        #         if length(nbc) == 1
+        #             insert!(U, 2nbc[1]-1, 0)
+        #             insert!(U, 2nbc[1], 0)
+        #         else
+        #             if nbc[2][1] != Inf
+        #                 insert!(U, 2nbc[1]-1, nbc[2][1])
+        #             end
+        #             if nbc[2][2] != Inf
+        #                 insert!(U, 2nbc[1], nbc[2][2])
+        #             end
+        #         end
+        #     end
+        # end
+    end
+    F = K*U
+    return FEA(F, K, U)
 end
 
 """

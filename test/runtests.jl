@@ -212,4 +212,21 @@ using Test
     preparedelements = prepareelements_beam(elements, E, I, L)
     U = solve(preparedelements, nodeboundaryconditions, F_applied).U
     @test round.(U, digits=6) == [0, 0, -0.05, -0.001373, -0.141176, -0.001569]
+
+    # problem 6-3.1
+    E, ν, t = 30e6, 0.3, 1  # [psi, n/a, in]
+    elements = Dict(
+        "1"=>(i=1, j=3, m=2),
+        "2"=>(i=1, j=4, m=3)
+    )
+    coords = Dict(
+        "1"=>(0, 0),
+        "2"=>(0, 10),
+        "3"=>(20, 10),
+        "4"=>(20, 0)
+    )
+    nodeboundaryconditions = [1, 2]
+    elements = prepareelements_triangular(elements, coords, E, ν, t)
+    println("Global Stiffness Matrix, K [lb/in]:")
+    println(globalstiffnessmatrix(elements) .* 0.91/375e3)
 end
