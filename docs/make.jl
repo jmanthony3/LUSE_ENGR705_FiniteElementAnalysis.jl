@@ -12,7 +12,7 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://jmanthony3.github.io/FiniteElementAnalysis.jl",
-        edit_link="master",
+        edit_link="main",
         assets=String[],
     ),
     pages=[
@@ -22,5 +22,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/jmanthony3/FiniteElementAnalysis.jl",
-    devbranch="master",
+    devbranch="main",
 )

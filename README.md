@@ -2,7 +2,7 @@
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jmanthony3.github.io/FiniteElementAnalysis.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jmanthony3.github.io/FiniteElementAnalysis.jl/dev/)
-[![Build Status](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+[![Build Status](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Documentation](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/documentation.yml/badge.svg)](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/documentation.yml)
 
 This package provides:
