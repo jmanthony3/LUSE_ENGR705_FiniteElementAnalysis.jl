@@ -1,17 +1,17 @@
 ```@meta
-CurrentModule = FiniteElementAnalysis
+CurrentModule = LUSE_ENGR705_FiniteElementAnalysis
 ```
 
-# FiniteElementAnalysis.jl
+# LUSE_ENGR705_FiniteElementAnalysis.jl
 
-Documentation for [FiniteElementAnalysis](https://github.com/jmanthony3/FiniteElementAnalysis.jl).
+Documentation for [LUSE_ENGR705_FiniteElementAnalysis](https://github.com/jmanthony3/LUSE_ENGR705_FiniteElementAnalysis.jl).
 
 ```@contents
 ```
 
 ## Functions
 ```@autodocs
-Modules = [FiniteElementAnalysis]
+Modules = [LUSE_ENGR705_FiniteElementAnalysis]
 ```
 
 ## Index

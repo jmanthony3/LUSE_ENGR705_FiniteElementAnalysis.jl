@@ -1,17 +1,17 @@
-using FiniteElementAnalysis
+using LUSE_ENGR705_FiniteElementAnalysis
 using Documenter
 
-DocMeta.setdocmeta!(FiniteElementAnalysis, :DocTestSetup, :(using FiniteElementAnalysis); recursive=true)
+DocMeta.setdocmeta!(LUSE_ENGR705_FiniteElementAnalysis, :DocTestSetup, :(using LUSE_ENGR705_FiniteElementAnalysis); recursive=true)
 
 makedocs(;
-    modules=[FiniteElementAnalysis],
+    modules=[LUSE_ENGR705_FiniteElementAnalysis],
     authors="Joby M. Anthony III",
-    repo="https://github.com/jmanthony3/FiniteElementAnalysis.jl/blob/{commit}{path}#{line}",
-    sitename="FiniteElementAnalysis.jl",
+    repo="https://github.com/jmanthony3/LUSE_ENGR705_FiniteElementAnalysis.jl/blob/{commit}{path}#{line}",
+    sitename="LUSE_ENGR705_FiniteElementAnalysis.jl",
     doctest=false,
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://jmanthony3.github.io/FiniteElementAnalysis.jl",
+        canonical="https://jmanthony3.github.io/LUSE_ENGR705_FiniteElementAnalysis.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -21,6 +21,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/jmanthony3/FiniteElementAnalysis.jl",
+    repo="github.com/jmanthony3/LUSE_ENGR705_FiniteElementAnalysis.jl",
     devbranch="main",
 )

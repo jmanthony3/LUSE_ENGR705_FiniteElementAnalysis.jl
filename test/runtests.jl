@@ -1,7 +1,7 @@
-using FiniteElementAnalysis
+using LUSE_ENGR705_FiniteElementAnalysis
 using Test
 
-@testset "FiniteElementAnalysis.jl" begin
+@testset "LUSE_ENGR705_FiniteElementAnalysis.jl" begin
     # ENGR 705-001: Finite Element Analysis - Homework 3
     ## 3.1
     A, E, L = 4, 30e6, 30 # [in², psi, in]

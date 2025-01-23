@@ -1,4 +1,4 @@
-name = "FiniteElementAnalysis"
+name = "LUSE_ENGR705_FiniteElementAnalysis"
 uuid = "c185b64a-f1cc-46a9-b3a8-aef9edaf193f"
 authors = ["Joby M. Anthony III"]
 version = "0.0.0-dev"

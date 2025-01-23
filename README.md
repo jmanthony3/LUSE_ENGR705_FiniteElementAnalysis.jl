@@ -1,9 +1,9 @@
-# FiniteElementAnalysis.jl
+# LUSE_ENGR705_FiniteElementAnalysis.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jmanthony3.github.io/FiniteElementAnalysis.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jmanthony3.github.io/FiniteElementAnalysis.jl/dev/)
-[![Build Status](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Documentation](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/Documentation.yml/badge.svg)](https://github.com/jmanthony3/FiniteElementAnalysis.jl/actions/workflows/Documentation.yml)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jmanthony3.github.io/LUSE_ENGR705_FiniteElementAnalysis.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jmanthony3.github.io/LUSE_ENGR705_FiniteElementAnalysis.jl/dev/)
+[![Build Status](https://github.com/jmanthony3/LUSE_ENGR705_FiniteElementAnalysis.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jmanthony3/LUSE_ENGR705_FiniteElementAnalysis.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Documentation](https://github.com/jmanthony3/LUSE_ENGR705_FiniteElementAnalysis.jl/actions/workflows/Documentation.yml/badge.svg)](https://github.com/jmanthony3/LUSE_ENGR705_FiniteElementAnalysis.jl/actions/workflows/Documentation.yml)
 
 This package provides:
 - Command line interface for simple, two-dimensional, solid mechanics Finite Element Analysis (FEA) problems.

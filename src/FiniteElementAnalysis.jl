@@ -1,4 +1,4 @@
-module FiniteElementAnalysis
+module LUSE_ENGR705_FiniteElementAnalysis
 
 export FEA
 export transformationmatrix

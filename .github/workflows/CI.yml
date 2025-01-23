@@ -50,6 +50,6 @@ jobs:
   #     - run: |
   #         julia --project=docs -e '
   #           using Documenter: DocMeta, doctest
-  #           using FiniteElementAnalysis
-  #           DocMeta.setdocmeta!(FiniteElementAnalysis, :DocTestSetup, :(using FiniteElementAnalysis); recursive=true)
-  #           doctest(FiniteElementAnalysis)'
+  #           using LUSE_ENGR705_FiniteElementAnalysis
+  #           DocMeta.setdocmeta!(LUSE_ENGR705_FiniteElementAnalysis, :DocTestSetup, :(using LUSE_ENGR705_FiniteElementAnalysis); recursive=true)
+  #           doctest(LUSE_ENGR705_FiniteElementAnalysis)'
